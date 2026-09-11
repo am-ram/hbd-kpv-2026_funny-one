@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head><link rel="icon" type="image/png" href="%BASE_URL%ribbon.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Google Fonts trial: remove these links to restore the previous typography. -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;1,500&family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet" />
+  <link href="/src/font-trial.css" rel="stylesheet" />
+  <title>For Krishna Priya · Happy birthday</title>
+  <script type="module" src="/src/main.js"></script>
+</head>
+<body>
+  <canvas id="scene" aria-hidden="true"></canvas>
+  <div class="loading-screen" role="status" aria-live="polite">
+    <p class="loading-dedication">For Krishna Priya</p>
+    <p id="loading-message">A little something is coming into view…</p>
+    <button id="retry-load" type="button" hidden>Try again</button>
+  </div>
+  <main class="story-shell" aria-busy="true">
+    <header class="intro">
+      <p class="eyebrow">For Krishna Priya</p>
+      <h1>Happy Birthday</h1>
+      <p class="lede">A little filmy. A little floral.<br>Made for you.</p>
+    </header>
+    <section class="caption-panel" aria-label="Birthday wish">
+      <div class="wish-progress" role="progressbar" aria-label="Birthday wishes" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1"></div>
+      <div class="caption-text" aria-live="polite" aria-atomic="true">
+      <p id="active-kicker">Wish 01 / 08</p>
+      <h2 id="active-title">Today, especially you</h2>
+      <p id="active-copy">Happy birthday, Krishna Priya. I wanted to make you something you could keep, so here’s a little corner of the internet made for you.</p>
+      </div>
+    </section>
+    <div class="scroll-spacer" aria-hidden="true"></div>
+  </main>
+  <footer class="outro">
+
+    <p id="scroll-hint">Scroll through eight little wishes. Take your time.</p>
+    <div class="ending" hidden><p>Happy birthday, Krishna Priya.</p><button id="read-again" type="button">Read again <span aria-hidden="true">↺</span></button></div>
+  </footer>
+<noscript><style>.loading-screen{display:none}.story-shell{opacity:1}</style><p>Please enable JavaScript to explore the birthday gallery.</p></noscript>
+</body>
+</html>
