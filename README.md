@@ -79,3 +79,11 @@ After deployment, open the API's `/health` (expect status ok), visit each fronte
 This means the deployment is serving source as static content instead of invoking the API. The server config explicitly builds only `api/index.js` using `@vercel/node` and routes all requests to that function. This is the legacy explicit-builder configuration; Vercel may note that dashboard build settings are ignored, which is expected here.
 
 Confirm Root Directory points to the folder containing `server/vercel.json` (normally `server`, or the repository-relative path ending in `/server`). Publish the current files, including `api/index.js`, `runtime.js`, `app.js`, `schema.sql`, and `vercel.json`. Redeploy the latest source, rather than redeploying an older deployment snapshot. The server's `/` should show JSON identifying the Birthday tracking API; `/health` should return `{"status":"ok"}`. A missing or incorrect DATABASE_URL causes initialization failure, not JavaScript source to appear.
+
+## Current Vercel deployments
+
+The shared API is https://hbd-kpv-2026-server.vercel.app. Both `client/vercel.json` and `gallery/vercel.json` supply this URL as the build-time `VITE_API_URL` for their separate Vercel builds. Keep any Vercel dashboard override for that variable aligned with this URL. Local and combined-host builds retain their existing same-origin/proxy behavior.
+
+The funny site, https://kpv-hbd.vercel.app, is explicitly allowed by the API even when an existing ALLOWED_ORIGINS setting contains only local URLs. Additional origins from ALLOWED_ORIGINS are retained. When the main gallery site is deployed, append its exact HTTPS origin to the server project's ALLOWED_ORIGINS and redeploy the server. No trailing slash or wildcard is needed.
+
+Redeploy the server and both frontends after these configuration changes. The funny site posts to /api/poster/events (birthday_events); the main gallery posts to /api/gallery/events (gallery_events). Both use the same Neon database and API deployment, with separate event tables and IST views.
