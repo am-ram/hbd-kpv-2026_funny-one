@@ -87,3 +87,7 @@ The shared API is https://hbd-kpv-2026-server.vercel.app. Both `client/vercel.js
 The funny site, https://kpv-hbd.vercel.app, is explicitly allowed by the API even when an existing ALLOWED_ORIGINS setting contains only local URLs. Additional origins from ALLOWED_ORIGINS are retained. When the main gallery site is deployed, append its exact HTTPS origin to the server project's ALLOWED_ORIGINS and redeploy the server. No trailing slash or wildcard is needed.
 
 Redeploy the server and both frontends after these configuration changes. The funny site posts to /api/poster/events (birthday_events); the main gallery posts to /api/gallery/events (gallery_events). Both use the same Neon database and API deployment, with separate event tables and IST views.
+
+### Visitor IPs on Vercel
+
+On Vercel (`VERCEL=1`), the API automatically trusts one proxy hop and uses Vercel's overwritten X-Forwarded-For header for both recorded IPs and rate limiting. This takes precedence over an old TRUST_PROXY=0 value. Outside Vercel, TRUST_PROXY remains explicit and defaults to zero. Redeploy the server with runtime.js and proxy.js to apply this fix. Previously recorded 127.0.0.1 values cannot be reconstructed from the stored events.
