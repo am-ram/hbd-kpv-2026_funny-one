@@ -9,8 +9,9 @@ import { isIP } from 'node:net';
 
 export function visitorIp(req, vercel = false) {
   if (vercel) {
-    for (const header of ['x-vercel-forwarded-for', 'x-forwarded-for', 'x-real-ip']) {
-      const value = req.get(header)?.split(',')[0].trim();
+    // Match the 2025 server: first forwarded address, normalized IPv4 mapping.
+    for (const header of ['x-forwarded-for', 'x-vercel-forwarded-for', 'x-real-ip']) {
+      const value = req.get(header)?.split(',')[0].trim().replace(/^::ffff:(?=\d+\.)/i, '');
       if (value && isIP(value) && !/^127\./.test(value) && value !== '::1' && !value.startsWith('::ffff:127.')) return value;
     }
     // Missing platform metadata is unknown, not the internal loopback address.

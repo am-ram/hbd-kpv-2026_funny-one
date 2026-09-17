@@ -18,7 +18,9 @@ try { sessionId = sessionStorage.getItem('birthday-session') || crypto.randomUUI
 function track(type, detail = {}, leaving = false) {
   if (api === 'off') return;
   const body = JSON.stringify({ eventId: crypto.randomUUID(), sessionId, type, occurredAt: new Date().toISOString(), path: location.pathname, detail });
-  fetch(`${api}/api/poster/events`, {method:'POST', headers:{'Content-Type':'application/json'}, body, keepalive: leaving, credentials:'omit'}).catch(() => {});
+  fetch(`${api}/api/poster/events`, {method:'POST', headers:{'Content-Type':'application/json'}, body, keepalive: leaving, credentials:'omit'})
+    .then(response => { if (!response.ok) console.warn('Birthday tracking request failed:', response.status); })
+    .catch(() => console.warn('Birthday tracking could not reach the API.'));
 }
 const audio = document.querySelector('#audio'), play = document.querySelector('#play'), stop = document.querySelector('#stop'), seek = document.querySelector('#seek'), status = document.querySelector('#music-status');
 const time = seconds => `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2,'0')}`;

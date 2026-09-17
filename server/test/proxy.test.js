@@ -33,3 +33,8 @@ test('platform headers are ignored locally and malformed or loopback values are 
   assert.equal(visitorIp(req({'x-forwarded-for':'127.0.0.1'}),true),null);
   assert.equal(visitorIp(req({}),true),null);
 });
+
+test('2025 extraction uses the first forwarded IP and removes the IPv4-mapped prefix', () => {
+  const req = {ip:'127.0.0.1',get:key=>({'x-forwarded-for':' ::ffff:203.0.113.24, 127.0.0.1','x-vercel-forwarded-for':'198.51.100.9'})[key]};
+  assert.equal(visitorIp(req,true),'203.0.113.24');
+});
