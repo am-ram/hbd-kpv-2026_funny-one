@@ -1,7 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import { rateLimit } from 'express-rate-limit';
+import { rateLimit, ipKeyGenerator } from 'express-rate-limit';
+import { visitorIp } from './proxy.js';
 import { fileURLToPath } from 'node:url';
 
 const types = new Set(['page_view','site_enter','page_hidden','page_exit','song_play','song_pause','song_stop','song_end','song_seek','song_error','poster_open','poster_close','confetti']);
@@ -39,7 +40,7 @@ export function validateEvent(value, site = 'poster') {
   const allowed = new Set(['position','playing','language','viewport','reason']);
   return Object.entries(value.detail).every(([key,v]) => allowed.has(key) && (key === 'position' ? Number.isFinite(v) && v >= 0 && v <= 86400 : key === 'playing' ? typeof v === 'boolean' : typeof v === 'string' && v.length <= 100));
 }
-export function createApp({ pool, origins, trustProxy = false, staticDirs = {}, serveSites = true }) {
+export function createApp({ pool, origins, trustProxy = false, staticDirs = {}, serveSites = true, vercel = false }) {
   const app = express();
   app.disable('x-powered-by');
   app.set('trust proxy', trustProxy);
@@ -49,16 +50,16 @@ export function createApp({ pool, origins, trustProxy = false, staticDirs = {}, 
     'img-src': ["'self'", 'data:', 'blob:'],
     'upgrade-insecure-requests': null
   }}}));
-  app.get('/health', async (_req,res) => { try { await pool.query('SELECT 1'); res.json({status:'ok'}); } catch { res.status(503).json({status:'unavailable'}); } });
+  app.get('/health', async (_req,res) => { try { await pool.query('SELECT 1'); res.json({status:'ok', ipHandling:vercel ? 'vercel-headers-v2' : 'express-proxy', revision:process.env.VERCEL_GIT_COMMIT_SHA?.slice(0,7) || null}); } catch { res.status(503).json({status:'unavailable'}); } });
   app.use('/api', (req,res,next) => { if (!origins.includes(req.get('origin'))) return res.status(403).json({error:'Origin not allowed'}); next(); });
   app.use('/api', cors({origin:origins, methods:['POST','OPTIONS'], allowedHeaders:['Content-Type'], maxAge:86400}));
-  app.use('/api', rateLimit({windowMs:60_000, limit:120, standardHeaders:'draft-8', legacyHeaders:false}));
+  app.use('/api', rateLimit({windowMs:60_000, limit:120, standardHeaders:'draft-8', legacyHeaders:false, keyGenerator:req => ipKeyGenerator(visitorIp(req, vercel) || req.socket.remoteAddress || 'unknown')}));
   app.use(express.json({limit:'8kb'}));
   const record = site => async (req,res) => {
     if (!validateEvent(req.body, site)) return res.status(400).json({error:'Invalid event'});
     const e = req.body;
     try {
-      await pool.query(inserts[site], [e.eventId,e.sessionId,e.type,e.occurredAt,req.ip,(req.get('user-agent') || '').slice(0,512),req.get('origin').slice(0,256),e.path,e.detail]);
+      await pool.query(inserts[site], [e.eventId,e.sessionId,e.type,e.occurredAt,visitorIp(req, vercel),(req.get('user-agent') || '').slice(0,512),req.get('origin').slice(0,256),e.path,e.detail]);
       res.status(202).json({accepted:true});
     } catch { console.error('Event persistence failed'); res.status(503).json({error:'Tracking temporarily unavailable'}); }
   };

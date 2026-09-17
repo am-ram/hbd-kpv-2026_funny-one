@@ -90,4 +90,6 @@ Redeploy the server and both frontends after these configuration changes. The fu
 
 ### Visitor IPs on Vercel
 
-On Vercel (`VERCEL=1`), the API automatically trusts one proxy hop and uses Vercel's overwritten X-Forwarded-For header for both recorded IPs and rate limiting. This takes precedence over an old TRUST_PROXY=0 value. Outside Vercel, TRUST_PROXY remains explicit and defaults to zero. Redeploy the server with runtime.js and proxy.js to apply this fix. Previously recorded 127.0.0.1 values cannot be reconstructed from the stored events.
+The Vercel function explicitly enables platform-header IP resolution for recorded IPs and rate limiting. Outside Vercel, TRUST_PROXY remains explicit and defaults to zero. Previously recorded localhost values cannot be reconstructed from stored events.
+
+IP handling v2: the Vercel API entrypoint explicitly enables platform-header handling, independent of VERCEL or TRUST_PROXY environment settings. It prefers x-vercel-forwarded-for, validates IPv4/IPv6, and stores NULL when platform IP metadata is missing instead of falsely recording localhost. Local servers ignore platform headers. /health reports ipHandling=vercel-headers-v2 and the deployment revision so an outdated server deployment can be identified. Redeploy the server project, not just the frontend.

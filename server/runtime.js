@@ -14,5 +14,8 @@ catch {
   await pool.end();
   throw new Error('Database initialization failed. Check DATABASE_URL and network access.');
 }
-export default createApp({pool,origins,trustProxy,serveSites:process.env.VERCEL !== '1'});
+export function createRuntimeApp(vercel = process.env.VERCEL === '1') {
+  return createApp({pool,origins,trustProxy,serveSites:!vercel,vercel});
+}
+export default createRuntimeApp();
 
